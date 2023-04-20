@@ -1,6 +1,8 @@
 package lru
 
-import "container/list"
+import (
+	"container/list"
+)
 
 // LRU缓存策略
 // 队尾是最近使用的
@@ -83,6 +85,13 @@ func (c *Cache) RemoveOldElement() {
 
 // 新增、修改
 func (c *Cache) Add(key string, value Value) {
+	// log.Printf("lru Add | key: %v, value: %v\n", key, value)
+
+	// log.Println("lru Add | c is nil? ", c == nil)
+
+	// element := c.cache[key]
+	// log.Printf("lru Add | key: %v, element: %v\n", key, element)
+
 	// 0. 先判断有没有；
 	// 1. 添加元素到map； 2. 将节点插入到队尾； 3. 更新所占内存； 4. 回调添加方法；
 	// 5. 如果内存超出最大限制，需要将最近最少使用的节点删除
