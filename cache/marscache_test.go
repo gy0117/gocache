@@ -32,9 +32,9 @@ func TestGet(t *testing.T) {
 	convey.Convey("TestGet", t, func() {
 
 		var db = map[string]string{
-			"Tom":  "1",
-			"Jack": "2",
-			"Sam":  "3",
+			"zhangsan": "100",
+			"lisi":     "200",
+			"wangwu":   "300",
 		}
 
 		loadCounts := make(map[string]int, len(db))

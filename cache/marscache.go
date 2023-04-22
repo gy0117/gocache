@@ -2,7 +2,10 @@ package cache
 
 import (
 	"fmt"
+	"log"
 	"sync"
+
+	"github.com/marsxingzhi/marscache/peers"
 )
 
 type Getter interface {
@@ -17,9 +20,10 @@ func (gf GetterFunc) Get(key string) ([]byte, error) {
 }
 
 type Group struct {
-	name      string
-	getter    Getter
-	mainCache cacheInner
+	name       string
+	getter     Getter
+	mainCache  cacheInner
+	peerPicker peers.PeerPicker
 }
 
 var (
@@ -47,6 +51,13 @@ func NewGroup(name string, capacity int64, getter Getter) *Group {
 	return g
 }
 
+func (g *Group) RegisterPeerPicker(peer peers.PeerPicker) {
+	if g.peerPicker != nil {
+		panic("RegisterPeerPicker called more than once")
+	}
+	g.peerPicker = peer
+}
+
 func GetGroup(name string) *Group {
 	mutex.RLock()
 	g := groups[name]
@@ -60,8 +71,10 @@ func (g *Group) Get(key string) (ByteData, error) {
 	}
 
 	if bytedata, ok := g.mainCache.get(key); ok {
+		log.Printf("Group.Get | mainCache.get successfully data: %v\n", bytedata.String())
 		return bytedata, nil
 	}
+	log.Println("Group.Get | cache miss")
 	// 如果没有缓存，则加载本地或者远程的
 	return g.load(key)
 }
@@ -70,11 +83,24 @@ func (g *Group) put(key string, value ByteData) {
 	g.mainCache.add(key, value)
 }
 
+// 1. 先去远程查找
+// 2. 远程找不到，再去本地找
 func (g *Group) load(key string) (ByteData, error) {
+	if g.peerPicker != nil {
+		if peer, ok := g.peerPicker.PickPeer(key); ok {
+			bytedata, err := g.GetFromPeerPicker(peer, key)
+			if err == nil {
+				log.Printf("Group.load | get from PeerPicker successfully, data: %+v\n", bytedata.String())
+				return bytedata, nil
+			}
+			log.Printf("Group.load | failed to get from peer, failed: %+v\n", err)
+		}
+	}
 	return g.loadLocally(key)
 }
 
 func (g *Group) loadLocally(key string) (ByteData, error) {
+	log.Printf("Group.loadLocally | key: %v\n", key)
 	bytedata, err := g.getter.Get(key)
 	if err != nil {
 		return ByteData{}, err
@@ -87,4 +113,12 @@ func (g *Group) loadLocally(key string) (ByteData, error) {
 	// 添加到缓存
 	g.put(key, val)
 	return val, nil
+}
+
+func (g *Group) GetFromPeerPicker(peerGetter peers.PeerGetter, key string) (ByteData, error) {
+	b, err := peerGetter.Get(g.name, key)
+	if err != nil {
+		return ByteData{}, err
+	}
+	return ByteData{data: b}, nil
 }
