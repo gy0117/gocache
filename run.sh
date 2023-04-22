@@ -9,8 +9,24 @@ go build -o server
 
 sleep 2
 echo ">> start test"
-# curl "http://127.0.0.1:9999/api?key=zhangsan" &
-# curl "http://127.0.0.1:9999/api?key=zhangsan" &
-# curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
+curl "http://127.0.0.1:9999/api?key=zhangsan" &
 
 wait

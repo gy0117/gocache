@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/marsxingzhi/marscache/peers"
+	"github.com/marsxingzhi/marscache/singleflight"
 )
 
 type Getter interface {
@@ -24,6 +25,8 @@ type Group struct {
 	getter     Getter
 	mainCache  cacheInner
 	peerPicker peers.PeerPicker
+
+	loader *singleflight.Group
 }
 
 var (
@@ -43,6 +46,7 @@ func NewGroup(name string, capacity int64, getter Getter) *Group {
 		name:      name,
 		getter:    getter,
 		mainCache: cache,
+		loader:    &singleflight.Group{},
 	}
 
 	mutex.Lock()
@@ -76,7 +80,15 @@ func (g *Group) Get(key string) (ByteData, error) {
 	}
 	log.Println("Group.Get | cache miss")
 	// 如果没有缓存，则加载本地或者远程的
-	return g.load(key)
+	// return g.load(key)
+
+	data, err := g.loader.Do(key, func() (singleflight.CallValue, error) {
+		return g.load(key)
+	})
+	if err != nil {
+		return ByteData{}, err
+	}
+	return data.(ByteData), nil
 }
 
 func (g *Group) put(key string, value ByteData) {
