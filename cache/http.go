@@ -9,7 +9,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/marsxingzhi/marscache/consistenthash"
+	"github.com/marsxingzhi/marscache/pb"
 	"github.com/marsxingzhi/marscache/peers"
 )
 
@@ -88,9 +90,14 @@ func (p *HttpPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	body, err := proto.Marshal(&pb.Response{Value: item.ByteSlice()})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/octet-stream")
-	// 返回副本
-	w.Write(item.ByteSlice())
+	w.Write(body)
 
 }
 
@@ -100,27 +107,56 @@ type httpGetter struct {
 }
 
 // 1. 拼接url，执行请求
-func (hg *httpGetter) Get(group string, key string) ([]byte, error) {
+// 替换成下面的gRPC通信
+// func (hg *httpGetter) Get(group string, key string) ([]byte, error) {
+// 	// url.QueryEscape对string进行转义
+// 	url := fmt.Sprintf("%v%v/%v", hg.baseUrl, url.QueryEscape(group), url.QueryEscape(key))
+
+// 	log.Printf("httpGetter.Get | url: %v\n", url)
+
+// 	resp, err := http.Get(url)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer resp.Body.Close()
+
+// 	if resp.StatusCode != http.StatusOK {
+// 		return nil, fmt.Errorf("server returned: %v", resp.Status)
+// 	}
+
+// 	b, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("reading response body: %v", err)
+// 	}
+
+// 	return b, nil
+
+// }
+
+func (hg *httpGetter) Get(in *pb.Request, out *pb.Response) error {
 	// url.QueryEscape对string进行转义
-	url := fmt.Sprintf("%v%v/%v", hg.baseUrl, url.QueryEscape(group), url.QueryEscape(key))
+	url := fmt.Sprintf("%v%v/%v", hg.baseUrl, url.QueryEscape(in.GetGroup()), url.QueryEscape(in.GetKey()))
 
 	log.Printf("httpGetter.Get | url: %v\n", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned: %v", resp.Status)
+		return fmt.Errorf("server returned: %v", resp.Status)
 	}
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return fmt.Errorf("reading response body: %v", err)
 	}
 
-	return b, nil
+	if err := proto.Unmarshal(b, out); err != nil {
+		return fmt.Errorf("proto.Unmarshal response body: %v", err)
+	}
 
+	return nil
 }

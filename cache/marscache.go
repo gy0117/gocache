@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/marsxingzhi/marscache/pb"
 	"github.com/marsxingzhi/marscache/peers"
 	"github.com/marsxingzhi/marscache/singleflight"
 )
@@ -128,9 +129,19 @@ func (g *Group) loadLocally(key string) (ByteData, error) {
 }
 
 func (g *Group) GetFromPeerPicker(peerGetter peers.PeerGetter, key string) (ByteData, error) {
-	b, err := peerGetter.Get(g.name, key)
+	req := &pb.Request{
+		Group: g.name,
+		Key:   key,
+	}
+
+	resp := &pb.Response{}
+
+	// b, err := peerGetter.Get(g.name, key)
+
+	err := peerGetter.Get(req, resp)
+
 	if err != nil {
 		return ByteData{}, err
 	}
-	return ByteData{data: b}, nil
+	return ByteData{data: resp.Value}, nil
 }
