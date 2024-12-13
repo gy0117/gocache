@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-option go_package="github.com/marsxingzhi/marscache/pb";
+option go_package="github.com/gy0117/gocache/pb";
 
 // 对应 /_marscache/<group>/<name>
 message Request {

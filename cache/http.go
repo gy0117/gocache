@@ -10,9 +10,9 @@ import (
 	"sync"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/marsxingzhi/marscache/consistenthash"
-	"github.com/marsxingzhi/marscache/pb"
-	"github.com/marsxingzhi/marscache/peers"
+	"github.com/gy0117/gocache/consistenthash"
+	"github.com/gy0117/gocache/pb"
+	"github.com/gy0117/gocache/peers"
 )
 
 const CACHE_BASE_PATH = "/_marscache/"
@@ -63,9 +63,10 @@ func (hp *HttpPool) PickPeer(key string) (peers.PeerGetter, bool) {
 	return nil, false
 }
 
-// 1. 解析url，拿到groupname和key
-//		判断path是否是以/_geecache/为前缀的。 否，则panic
-// 2. 根据group和key，获取到对应的value，然后写到writer中
+//  1. 解析url，拿到groupname和key
+//     判断path是否是以/_geecache/为前缀的。 否，则panic
+//  2. 根据group和key，获取到对应的value，然后写到writer中
+//
 // 例如：http://127.0.0.1/_marscache/users/zhangsan，groupname是users，key是zhangsan，即获取users group下的key为zhangsan对应的value
 func (p *HttpPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.URL.Path, p.basepath) {

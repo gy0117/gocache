@@ -1,6 +1,6 @@
 package peers
 
-import "github.com/marsxingzhi/marscache/pb"
+import "github.com/gy0117/gocache/pb"
 
 // 根据key获取对应的节点(节点能力)
 type PeerPicker interface {

@@ -3,7 +3,7 @@ package cache
 import (
 	"sync"
 
-	"github.com/marsxingzhi/marscache/lru"
+	"github.com/gy0117/gocache/lru"
 )
 
 // 封装lru，提供并发能力

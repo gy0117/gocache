@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/marsxingzhi/marscache/cache"
+	"github.com/gy0117/gocache/cache"
 )
 
 var db = map[string]string{

@@ -5,9 +5,9 @@ import (
 	"log"
 	"sync"
 
-	"github.com/marsxingzhi/marscache/pb"
-	"github.com/marsxingzhi/marscache/peers"
-	"github.com/marsxingzhi/marscache/singleflight"
+	"github.com/gy0117/gocache/pb"
+	"github.com/gy0117/gocache/peers"
+	"github.com/gy0117/gocache/singleflight"
 )
 
 type Getter interface {
