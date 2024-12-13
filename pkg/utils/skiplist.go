@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	defaultMaxLevel = 32
+	defaultMaxLevel  = 32
+	skipListAddLevel = 0.25 // 跳表加一层索引的概率
 )
 
 type Element struct {
@@ -113,6 +114,7 @@ func (list *SkipList) calcScore(key []byte) (score float64) {
 		shift := uint(64 - 8 - i*8)
 		hash |= uint64(key[i]) << shift
 	}
+
 	score = float64(hash)
 	return
 }
@@ -128,10 +130,9 @@ func (list *SkipList) compare(score float64, key []byte, next *Element) int {
 }
 
 func (list *SkipList) randLevel() int {
-	i := 1
-	for ; ; i++ {
-		if rand.Intn(2) == 0 {
-			return i
-		}
+	level := 1
+	for rand.Int31n(100) < int32(100*skipListAddLevel) && level < list.maxLevel {
+		level++
 	}
+	return level
 }
